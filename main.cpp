@@ -1,10 +1,11 @@
 #include <iostream>
 
+#include "Server.h"
 #include "log/Logging.h"
 
-int main() {
-    int a = 0;
-    LOG("INFO") << "hello" << "tjs" << a << "this" << std::endl;
-    LOG("FATAL") << "error";
+int main(int argc, char* argv[]) {
+    Config config(8991);
+    Server server(config);
+
     return 0;
 }

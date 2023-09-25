@@ -33,13 +33,11 @@ public:
     void modChannel(const sp_Channel &channel);
     void delChannel(const sp_Channel &channel);
 
-    void assertInLoopThread();
-
 private:
-    int epoll_fd; // epoll的fd
-    EventLoop* ownerLoop; // 所属的事件循环
-    std::vector<epoll_event> events; // 存放epoll返回的events
-    std::unordered_map<int, sp_Channel> channel_map; // 存放fd和channel的映射
+    int epoll_fd_; // epoll的fd
+    EventLoop* ownerloop_; // 所属的事件循环
+    std::vector<epoll_event> events_; // 存放epoll返回的events
+    std::unordered_map<int, sp_Channel> channel_map_; // 存放fd和channel的映射
 };
 
 

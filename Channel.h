@@ -6,6 +6,7 @@
 #include <functional>
 
 #include <sys/epoll.h>
+#include <unistd.h>
 
 class EventLoop;
 
@@ -13,6 +14,7 @@ class Channel {
 public:
     typedef std::function<void()> EventCallback;
 
+    Channel() {}
     explicit Channel(int fd);
     ~Channel();
     Channel(const Channel&) = delete;
@@ -22,27 +24,27 @@ public:
     void handleEvents();
 
     // 设置回调函数
-    void setReadCallback(const EventCallback& readCb) { readCallback = readCb; }
-    void setWriteCallback(const EventCallback& writeCb) { writeCallback = writeCb; }
-    void setErrorCallback(const EventCallback& errorCb) { errorCallback = errorCb; }
+    void set_readCb(const EventCallback& readCb) { read_callback_ = readCb; }
+    void set_writeCb(const EventCallback& writeCb) { write_callback_ = writeCb; }
+    void set_errorCb(const EventCallback& errorCb) { error_callback_ = errorCb; }
 
-    int get_fd() const { return fd; }
-    int get_events() const { return events; }
-    int set_fd(int sfd) { fd = sfd; }
-    int set_events(int evt) { events = evt; }
-    void set_revents(int revt) { revents = revt; }
+    int get_fd() const { return fd_; }
+    int get_events() const { return events_; }
+    void set_fd(int sfd) { fd_ = sfd; }
+    void set_events(int evt) { events_ = evt; }
+    void set_revents(int revt) { revents_ = revt; }
 
 private:
     void update();
 
-    int fd;       // Channel的fd
-    int events;   // Channel正在监听的事件
-    int revents;  // Channel就绪事件
+    int fd_;       // Channel的fd
+    int events_;   // Channel正在监听的事件
+    int revents_;  // Channel就绪事件
 
     // 回调函数
-    EventCallback readCallback;
-    EventCallback writeCallback;
-    EventCallback errorCallback;
+    EventCallback read_callback_;
+    EventCallback write_callback_;
+    EventCallback error_callback_;
 };
 
 
