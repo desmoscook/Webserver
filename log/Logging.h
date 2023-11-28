@@ -53,8 +53,9 @@ private:
     ~Log();
 
     char buffer_[LOG_BUFFER_SIZE];  // 写入缓冲区
-    FILE* fd_;    // 文件的指针
-    std::mutex mutex_; // 文件写入的锁
+    FILE* fd_;                      // 文件的指针
+    std::mutex file_mutex_;         // 文件写入的锁
+    std::mutex buffer_mutex_;       // 缓冲区的访问锁
     BlockQueue<std::string> block_queue_;
 };
 

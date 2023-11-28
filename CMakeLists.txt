@@ -6,19 +6,22 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 add_executable(Webserver
     main.cpp
-    Server.h
-    Server.cpp
-    EventLoop.cpp
-    EventLoop.h
-    Channel.cpp
-    Channel.h
-    Poller.cpp
-    Poller.h
-    timer/timerQueue.h
+    webserver/Server.cpp
+    reactor/EventLoop.cpp
+    reactor/Channel.cpp
+    reactor/Poller.cpp
     timer/timerQueue.cpp
-    timer/MyHeap.h
     log/Logging.cpp
-    log/Logging.h
+    http/HttpHandler.cpp
+)
+
+target_include_directories(Webserver
+    PRIVATE
+    reactor
+    timer  
+    log  
+    http  
+    tool
 )
 
 # find_package(GTest REQUIRED)

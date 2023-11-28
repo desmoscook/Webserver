@@ -5,7 +5,7 @@
 #ifndef WEBSERVER_POOLER_H
 #define WEBSERVER_POOLER_H
 
-#include "log/Logging.h"
+#include "../log/Logging.h"
 #include "Channel.h"
 
 #include <vector>
@@ -16,7 +16,7 @@
 
 class EventLoop;
 
-const int EPOLLWAIT_TIME = -1;
+const int EPOLLWAIT_TIME = 5000;
 const int MAX_EVENTS_SIZE = 10000;
 
 // 对epoll进行封装
@@ -24,19 +24,18 @@ class Poller {
 public:
     typedef std::shared_ptr<Channel> sp_Channel;
 
-    Poller(EventLoop* loop);
-    ~Poller();
+    Poller();
+    ~Poller() = default;
 
     // 轮询事件
-    void poll(std::vector<sp_Channel>& channle_list);
+    void poll(std::vector<sp_Channel>& channel_list);
     void addChannel(const sp_Channel &channel);
     void modChannel(const sp_Channel &channel);
     void delChannel(const sp_Channel &channel);
 
 private:
-    int epoll_fd_; // epoll的fd
-    EventLoop* ownerloop_; // 所属的事件循环
-    std::vector<epoll_event> events_; // 存放epoll返回的events
+    int epoll_fd_;                                    // epoll的fd
+    epoll_event events_[MAX_EVENTS_SIZE];             // 存放epoll返回的events
     std::unordered_map<int, sp_Channel> channel_map_; // 存放fd和channel的映射
 };
 

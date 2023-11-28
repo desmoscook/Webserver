@@ -3,6 +3,7 @@
 
 #include "MyHeap.h"
 
+
 #include <iostream>
 #include <vector>
 #include <functional>
@@ -14,40 +15,52 @@
 #include <assert.h>
 
 class TimerQueue;
+class cmp;
 
 class Timer {
 public:
     typedef std::function<void()> TimerCallback;
     friend TimerQueue;
+    friend cmp;
 
-    Timer();
-    ~Timer() {}
+    Timer(int fd, TimerCallback cb);
+    ~Timer() = default;
 
-    bool operator<(const Timer& timer) const {
-        return timeout_time < timer.timeout_time;
+    void fresh();
+
+    bool operator==(const Timer& timer) const {
+        return fd_ == timer.fd_;
     }
 
 private:
-    time_t timeout_time; // 超时时间
-    TimerCallback cb;    // 超时回调
+    int fd_;              // 对应的clnt
+    time_t timeout_time_; // 超时时间
+    TimerCallback cb_;    // 超时回调
+};
+
+class cmp {
+public:
+    bool operator()(Timer* t1, Timer* t2) {
+        return t1->timeout_time_ < t2->timeout_time_;
+    }
 };
 
 
 class TimerQueue {
 public:
-    TimerQueue() {}
-    ~TimerQueue() {}
+    TimerQueue() = default;
+    ~TimerQueue() = default;
 
-    void addTimer(Timer t) { timer_queue_.add(t); }
-    void delTimer(Timer t);
-    void freshTimer(Timer t);
+    bool isTimeOut();
+    void handleTimeOut();
+
+    void addTimer(Timer* t) { timer_queue_.add(t); }
+    void delTimer(Timer* t) { timer_queue_.del(t); }
+    void freshTimer(Timer* t);
 
 private:
-    MyHeap<Timer> timer_queue_; // 定时器堆，是小根堆
-    std::unordered_map<int, Timer> timer_map_; // 定时器哈希表，用于快速查找定时器
+    MyHeap<Timer*, cmp> timer_queue_; // 定时器堆，是小根堆
+    // std::unordered_map<int, Timer> timer_map_; // 定时器哈希表，用于快速查找定时器
 };
-
-// TODO : 超时回调函数实现
-void timerCallBack();
 
 #endif // WEBSERVER_TIMERQUEUE_H

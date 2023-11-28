@@ -1,15 +1,36 @@
 #include "timerQueue.h"
 
-Timer::Timer() { 
-    // TODO ：使超时时间和超时回调可以自定义
-    timeout_time = time(NULL) + 20; 
-    cb = std::bind(timerCallBack);
+#include <bits/types/time_t.h>
+#include <utility>
+
+Timer::Timer(int fd, TimerCallback cb) : 
+    fd_(fd),
+    timeout_time_(time(nullptr) + 30),
+    cb_(std::move(cb)) {}
+
+void Timer::fresh() {
+    timeout_time_ = time(nullptr) + 30;
 }
 
-void timerCallBack() {
-
+bool TimerQueue::isTimeOut() {
+    if (timer_queue_.empty()) return false;
+    time_t t = time(nullptr);
+    if (t > timer_queue_.top()->timeout_time_) {
+        return true;
+    }
+    return false;
 }
 
-void TimerQueue::delTimer(Timer t) {
-    
+void TimerQueue::handleTimeOut() {
+    time_t t = time(nullptr);
+    while (!timer_queue_.empty()) {
+        Timer* front = timer_queue_.top();
+        if (t < front->timeout_time_) break;
+        front->cb_();
+    }
+}
+
+void TimerQueue::freshTimer(Timer* t) {
+    t->fresh();
+    timer_queue_.adjust();
 }

@@ -1,21 +1,18 @@
 #include "Poller.h"
 #include "EventLoop.h"
-#include "log/Logging.h"
+#include <cerrno>
 
-Poller::Poller(EventLoop* loop) : ownerloop_(loop) {
-    // epoll_fd_ = epoll_create(5);
-    // if (epoll_fd_ < 0) {
-    //     LOG_FATAL("epoll_fd create error");
-    // }
-}
-
-Poller::~Poller() {
+Poller::Poller() {
+    epoll_fd_ = epoll_create(5);
+    if (epoll_fd_ < 0) {
+        LOG_FATAL("epoll_fd create error");
+    }
 }
 
 void Poller::poll(std::vector<sp_Channel>& channel_list) {
-    int event_count = epoll_wait(epoll_fd_, &*events_.begin(), MAX_EVENTS_SIZE, EPOLLWAIT_TIME);
-    if (event_count < 0) {
-        LOG_FATAL("epoll_wait error");
+    int event_count = epoll_wait(epoll_fd_, events_, MAX_EVENTS_SIZE, EPOLLWAIT_TIME);
+    if (event_count < 0 && errno != EINTR) {
+        LOG_FATAL("epoll_wait error : %s", strerror(errno));
     }
     for (int i = 0; i < event_count; ++i) {
         int fd = events_[i].data.fd;
@@ -31,7 +28,7 @@ void Poller::addChannel(const sp_Channel &channel) {
     event.data.fd = fd;
     event.events = channel->get_events();
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_ADD, fd, &event) < 0) {
-        LOG_FATAL("epoll_ctl_add error");
+        LOG_FATAL("epoll_ctl_add error : %s", strerror(errno));
     }
     channel_map_[fd] = channel;
 }
@@ -42,7 +39,7 @@ void Poller::modChannel(const sp_Channel &channel) {
     event.data.fd = fd;
     event.events = channel->get_events();
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_MOD, fd, &event) < 0) {
-        LOG_FATAL("epoll_ctl_mod error");
+        LOG_FATAL("epoll_ctl_mod error : %s", strerror(errno));
     }
 }
 
@@ -52,7 +49,8 @@ void Poller::delChannel(const sp_Channel &channel) {
     event.data.fd = fd;
     event.events = channel->get_events();
     if (epoll_ctl(epoll_fd_, EPOLL_CTL_DEL, fd, &event) < 0) {
-        LOG_FATAL("epoll_ctl_del error");
+        LOG_FATAL("epoll_ctl_del error : %s", strerror(errno));
     }
     channel_map_.erase(fd);
+    close(fd);
 }

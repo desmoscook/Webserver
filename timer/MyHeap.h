@@ -13,8 +13,9 @@ public:
     void add(T t);
     void del(T t);
     void adjust();
+    T& top() { return heap_[0]; }
     void pop() { del(heap_[0]); }
-    void empty() { return heap_.empty(); }
+    bool empty() { return heap_.empty(); }
 
 private:
     void heapifyUp(int k);
@@ -33,15 +34,17 @@ template <typename T, typename cmp>
 inline void MyHeap<T, cmp>::del(T t) {
     // 找到对应的元素，和队尾元素进行交换，删除该元素
     auto it = std::find(heap_.begin(), heap_.end(), t);
-    std::swap(*it, heap_.back());
-    heap_.pop_back();
-    // 调整堆
-    heapifyDown(it - heap_.begin());
+    if (it != heap_.end()) {
+        std::swap(*it, heap_.back());
+        heap_.pop_back();
+        // 调整堆
+        heapifyDown(it - heap_.begin());
+    }
 }
 
 template <typename T, typename cmp>
 void MyHeap<T, cmp>::adjust() {
-    for (int i = heap_.size() / 2; i >= 0; --i) {
+    for (int i = heap_.size() / 2 - 1; i >= 0; --i) {
         heapifyDown(i);
     }
 }
